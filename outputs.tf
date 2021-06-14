@@ -22,3 +22,7 @@ output "public_subnet_cidrs" {
 output "eks_kubeconfig" {
   value = module.eks.eks_kubeconfig
 }
+
+output "eks_cluster_name" {
+  value = module.eks.eks_cluster_name
+}
