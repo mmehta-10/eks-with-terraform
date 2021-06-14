@@ -18,3 +18,7 @@ output "public_subnet_ids" {
 output "public_subnet_cidrs" {
   value = module.public_subnets.public_subnet_cidrs
 }
+
+output "eks_kubeconfig" {
+  value = module.eks.eks_kubeconfig
+}
