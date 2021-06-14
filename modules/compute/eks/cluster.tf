@@ -1,10 +1,14 @@
-data "terraform_remote_state" "vpc" {
-  backend = "s3"
-  config = {
-    bucket = "terraform-backend-in-s3-for-eks-with-terraform"
-    key    = "terraform.tfstate"
-    region = "us-east-1"
-  }
+# data "terraform_remote_state" "vpc" {
+#   backend = "s3"
+#   config = {
+#     bucket = "terraform-backend-in-s3-for-eks-with-terraform"
+#     key    = "terraform.tfstate"
+#     region = var.region
+#   }
+# }
+
+provider "external" {
+  # version = "~> 1.2"
 }
 
 resource "aws_iam_role" "eks_cluster" {
@@ -42,7 +46,8 @@ resource "aws_eks_cluster" "aws_eks" {
 
   vpc_config {
     //    subnet_ids = ["subnet-1", "subnet-2"] //TODO: fill
-    subnet_ids = data.terraform_remote_state.vpc.outputs.public_subnet_ids
+    //subnet_ids = data.terraform_remote_state.vpc.outputs.public_subnet_ids
+    subnet_ids = var.subnet_ids
   }
 
   tags = {
@@ -88,8 +93,9 @@ resource "aws_eks_node_group" "node" {
   cluster_name    = aws_eks_cluster.aws_eks.name
   node_group_name = "node_eks_with_terraform"
   node_role_arn   = aws_iam_role.eks_nodes.arn
-  subnet_ids      = data.terraform_remote_state.vpc.outputs.public_subnet_ids
+  # subnet_ids      = data.terraform_remote_state.vpc.outputs.public_subnet_ids
   //subnet_ids      = ["<subnet-1>", "<subnet-2>"]
+  subnet_ids      = var.subnet_ids
 
   scaling_config {
     desired_size = 1
@@ -106,8 +112,20 @@ resource "aws_eks_node_group" "node" {
   ]
 }
 
-output "cluster_name" {
-  value = aws_eks_cluster.aws_eks.name
+# Get the OIDC provider thumbprint for root CA
+data "external" "thumbprint" {
+  program =    ["${path.module}/get_oidc_thumbprint.sh", var.region]
+  depends_on = [aws_eks_cluster.aws_eks]
+}
+
+resource "aws_iam_openid_connect_provider" "aws_eks_oidc" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.external.thumbprint.result.thumbprint]
+  url             = data.aws_eks_cluster.aws_eks.identity[0].oidc[0].issuer
+
+  lifecycle {
+    ignore_changes = [thumbprint_list]
+  }
 }
 
 
@@ -149,4 +167,12 @@ KUBECONFIG
 output "eks_kubeconfig" {
   value = local.kubeconfig
   depends_on = [aws_eks_cluster.aws_eks]
+}
+
+output "eks_cluster_name" {
+  value    = aws_eks_cluster.aws_eks.name
+}
+
+output "cluster_name" {
+  value = aws_eks_cluster.aws_eks.name
 }
