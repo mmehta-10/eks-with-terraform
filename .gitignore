@@ -9,6 +9,9 @@
 .terraformrc
 terraform.rc
 
+# Ignore kubeconfig generated
+.kubeconfig.yaml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
