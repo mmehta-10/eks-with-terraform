@@ -1,8 +1,3 @@
-# locals {
-#   cluster_name = "eks-cluster-with-terraform"
-# }
-
-# Source: https://www.thinkahead.com/resources/how-to-leverage-hashicorp-terraform-remote-state/
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
@@ -112,6 +107,46 @@ resource "aws_eks_node_group" "node" {
 }
 
 output "cluster_name" {
-  # value = "eks_cluster_using_terraform"
   value = aws_eks_cluster.aws_eks.name
+}
+
+
+# generate KUBECONFIG as output to use as ~/.kube/config locally
+# save the 'terraform output eks_kubeconfig > config', run 'mv config ~/.kube/config' to use it for kubectl
+locals {
+  kubeconfig = <<KUBECONFIG
+
+apiVersion: v1
+clusters:
+- cluster:
+    server: ${aws_eks_cluster.aws_eks.endpoint}
+    certificate-authority-data: ${aws_eks_cluster.aws_eks.certificate_authority.0.data}
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: aws
+  name: aws
+current-context: aws
+kind: Config
+preferences: {}
+users:
+- name: aws
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      args:
+      - eks
+      - get-token
+      - --cluster-name
+      - ${aws_eks_cluster.aws_eks.name}
+      - --region
+      - us-east-1
+      command: aws
+KUBECONFIG
+}
+
+output "eks_kubeconfig" {
+  value = local.kubeconfig
+  depends_on = [aws_eks_cluster.aws_eks]
 }
