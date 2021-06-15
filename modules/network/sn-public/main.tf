@@ -1,20 +1,8 @@
-# Query all avilable Availibility Zone
+# Query all available Availibility Zone
 data "aws_availability_zones" "available" {}
 
-## Public subnet
-# TODO: https://github.com/100daysofdevops/21_days_of_aws_using_terraform/blob/master/vpc/main.tf
-/* resource "aws_subnet" "public" {
-  vpc_id            = var.vpc_id
-  cidr_block        = var.subnet_cidr
-  availability_zone = var.subnet_az
-
-  tags = {
-    Name = "public_${var.subnet_name}"
-  }
-} */
-
 # Subnet (public)
-# https://github.com/maneet8/subnetperazterraform/blob/master/vpc.tf
+
 resource "aws_subnet" "public_subnet" {
   count                   = var.az_count
   availability_zone       = element(split(", ", var.availability_zones), count.index)
@@ -23,7 +11,9 @@ resource "aws_subnet" "public_subnet" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "PublicSubnet"
+    Name                                        = "PublicSubnet",
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared",
+    "kubernetes.io/role/elb"                    = "1"
   }
 }
 

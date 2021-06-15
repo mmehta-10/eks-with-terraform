@@ -2,3 +2,4 @@
 variable "vpc_id" {}
 variable "az_count" {}
 variable "availability_zones" {}
+variable "cluster_name" {}
