@@ -45,9 +45,7 @@ module "eks" {
   source     = "./modules/compute/eks"
   region     = var.vpc_region
   subnet_ids = module.public_subnets.public_subnet_ids
-  # depends_on = [module.public_subnets]
 }
-
 
 ###############################################################################
 # Ingress
@@ -56,5 +54,4 @@ module "eks" {
 module "ingress" {
   source       = "./modules/compute/eks/ingress"
   cluster_name = module.eks.cluster_name
-  # depends_on   = [module.eks]
 }
