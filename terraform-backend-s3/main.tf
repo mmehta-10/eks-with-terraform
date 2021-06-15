@@ -11,8 +11,8 @@ provider "aws" {
 
 ## Configure backend
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "terraform-backend-in-s3-for-eks-with-terraform"
-
+  bucket        = "terraform-backend-in-s3-for-eks-with-terraform"
+  force_destroy = true
   versioning {
     enabled = true
   }
@@ -33,12 +33,3 @@ resource "aws_s3_bucket_public_access_block" "public_access_block_terraform_stat
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
-
-# terraform {
-#   backend "s3" {
-#     bucket  = "terraform-backend-in-s3-for-eks-with-terraform"
-#     key     = "terraform.tfstate"
-#     region  = "us-east-1"
-#     encrypt = true
-#   }
-# }
