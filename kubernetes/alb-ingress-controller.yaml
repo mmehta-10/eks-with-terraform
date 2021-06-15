@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app.kubernetes.io/name: alb-ingress-controller
+    app.kubernetes.io/name: alb-ingress
   name: alb-ingress-controller
 rules:
   - apiGroups:
@@ -42,7 +42,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app.kubernetes.io/name: alb-ingress-controller
+    app.kubernetes.io/name: alb-ingress
   name: alb-ingress-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -53,13 +53,15 @@ subjects:
     name: alb-ingress
     namespace: kube-system
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  labels:
-    app.kubernetes.io/name: alb-ingress-controller
-  name: alb-ingress
-  namespace: kube-system
+# apiVersion: v1
+# kind: ServiceAccount
+# metadata:
+#   labels:
+#     app.kubernetes.io/name: alb-ingress-controller
+#   name: alb-ingress
+#   namespace: kube-system
+  # annotations:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::106725087547:role/eks-alb-ingress-controller
 ---
 # Application Load Balancer (ALB) Ingress Controller Deployment Manifest.
 # This manifest details sensible defaults for deploying an ALB Ingress Controller.
@@ -104,7 +106,7 @@ spec:
             # Name of your cluster. Used when naming resources created
             # by the ALB Ingress Controller, providing distinction between
             # clusters.
-            - --cluster-name=eks-cluster-with-terraform
+            - --cluster-name=eks_cluster_using_terraform
 
             # AWS VPC ID this ingress controller will use to create AWS resources.
             # If unspecified, it will be discovered from ec2metadata.
