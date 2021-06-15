@@ -130,8 +130,19 @@ resource "aws_iam_policy" "ALBIngressControllerIAMPolicy" {
 POLICY
 }
 
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.aws_eks.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.aws_eks.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.aws_eks.token
+  # load_config_file       = false
+}
+
+data "aws_eks_cluster_auth" "aws_eks" {
+  name = var.cluster_name
+}
+
 data "aws_eks_cluster" "aws_eks" {
-  name = "eks_cluster_using_terraform"
+  name = var.cluster_name
 }
 
 data "aws_caller_identity" "current" {}
@@ -166,4 +177,22 @@ ROLE
 resource "aws_iam_role_policy_attachment" "ALBIngressControllerIAMPolicy" {
   policy_arn = aws_iam_policy.ALBIngressControllerIAMPolicy.arn
   role       = aws_iam_role.eks_alb_ingress_controller.name
+}
+
+# Only create k8s service account this way
+resource "kubernetes_service_account" "ingress" {
+  # automount_service_account_token = true
+  metadata {
+    name      = "alb-ingress"
+    namespace = "kube-system"
+    labels = {
+      "app.kubernetes.io/name"       = "alb-ingress"
+      "app.kubernetes.io/managed-by" = "terraform"
+    }
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.eks_alb_ingress_controller.arn
+    }
+  }
+
+  depends_on = [aws_iam_role.eks_alb_ingress_controller]
 }

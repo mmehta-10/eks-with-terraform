@@ -7,14 +7,6 @@ provider "aws" {
   profile                 = "default"
 }
 
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-  # token                  = data.aws_eks_cluster_auth.cluster.token
-  load_config_file = true
-  # version                = "~> 1.11"
-}
-
 ###############################################################################
 # Base Network
 ###############################################################################
@@ -33,6 +25,7 @@ module "public_subnets" {
   az_count           = var.az_count
   availability_zones = var.availability_zones
   vpc_id             = module.vpc.id
+  cluster_name       = "eks_cluster_using_terraform"
 }
 
 terraform {
@@ -50,12 +43,18 @@ terraform {
 
 module "eks" {
   source     = "./modules/compute/eks"
-  region = var.vpc_region
+  region     = var.vpc_region
   subnet_ids = module.public_subnets.public_subnet_ids
   # depends_on = [module.public_subnets]
 }
 
-data "aws_eks_cluster" "cluster" {
-  name       = module.eks.cluster_name
-  depends_on = [module.eks]
+
+###############################################################################
+# Ingress
+###############################################################################
+
+module "ingress" {
+  source       = "./modules/compute/eks/ingress"
+  cluster_name = module.eks.cluster_name
+  # depends_on   = [module.eks]
 }
