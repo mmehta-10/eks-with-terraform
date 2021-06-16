@@ -1,6 +1,4 @@
-provider "external" {
-  # version = "~> 1.2"
-}
+provider "external" {}
 
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
@@ -290,7 +288,7 @@ users:
       - --cluster-name
       - ${aws_eks_cluster.aws_eks.name}
       - --region
-      - us-east-1
+      - ${var.region}
       command: aws
 KUBECONFIG
 }
