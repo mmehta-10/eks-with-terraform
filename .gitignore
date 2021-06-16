@@ -11,6 +11,7 @@ terraform.rc
 
 # Ignore kubeconfig generated
 .kubeconfig.yaml
+.kubeconfig
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
