@@ -1,13 +1,18 @@
+## Create all resources 
+create_all: create_tf_backend create_tf_infra deploy_kubernetes_app
+
+## Delete everything
+delete_all: delete_kubernetes_app delete_tf_infra delete_tf_backend
+
 ## Create bucket using AWS S3 for acting as Terraform backend
 create_tf_backend:
-	terraform -chdir=modules/terraform-backend-s3 apply -auto-approve
+	terraform init && terraform -chdir=modules/terraform-backend-s3 apply -auto-approve
 
 ## Create infra using terraform, incl. EKS, subnets, VPC etc.
 create_tf_infra: 
 	terraform init && terraform apply -var-file="network.tfvars"
 	terraform output eks_kubeconfig > /tmp/.kubeconfig
 	sed -n -e "2,$$(($$(wc -l < /tmp/.kubeconfig) - 1))p" /tmp/.kubeconfig > .kubeconfig
-	# sed -n -e "2,$(($(wc -l < /tmp/.kubeconfig) - 1))p" /tmp/.kubeconfig > .kubeconfig
 
 ## Create resources in kubernetes
 deploy_kubernetes_app:
@@ -26,5 +31,3 @@ delete_tf_backend:
 ## delete all infra set up using terraform, incl. EKS, subnets, VPC etc.
 delete_tf_infra: 
 	terraform destroy
-
-delete_all: delete_kubernetes_app delete_tf_infra delete_tf_backend
