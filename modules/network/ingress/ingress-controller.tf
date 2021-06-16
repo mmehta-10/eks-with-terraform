@@ -138,10 +138,12 @@ provider "kubernetes" {
 }
 
 data "aws_eks_cluster_auth" "aws_eks" {
+  depends_on = [var.cluster_name]
   name = var.cluster_name
 }
 
 data "aws_eks_cluster" "aws_eks" {
+  depends_on = [var.cluster_name]
   name = var.cluster_name
 }
 
