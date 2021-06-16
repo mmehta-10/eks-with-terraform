@@ -1,4 +1,4 @@
-vpc_region = "us-east-1"
+vpc_region = "us-west-2"
 vpc_cidr_block=10.0.0.0/16
-availability_zones = "us-east-1a, us-east-1d, us-east-1c, us-east-1e"
+availability_zones = "us-west-2a, us-west-2b, us-west-2c"
 az_count = 2

@@ -33,7 +33,7 @@ terraform {
     bucket  = "terraform-backend-in-s3-for-eks-with-terraform"
     encrypt = true
     key     = "terraform.tfstate"
-    region  = "us-east-1"
+    region  = "us-east-1" # hard-coded because vars are not allowed
   }
 }
 
@@ -52,6 +52,6 @@ module "eks" {
 ###############################################################################
 
 module "ingress" {
-  source       = "./modules/compute/eks/ingress"
+  source       = "./modules/network/ingress"
   cluster_name = module.eks.cluster_name
 }
