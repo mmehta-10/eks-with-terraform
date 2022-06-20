@@ -1,16 +1,26 @@
-## Create AWS EKS and then deploy app with ingress
-create_all: create_tf_backend create_tf_infra deploy_kubernetes_app
+## Create AWS EKS. After that deploy app with ingress
+create_all: 
+	make create_backend
+	make create_infra
+	make deploy_kubernetes_app
 
-## Delete all items in AWS and EKS that were created through the scripts
-delete_all: delete_kubernetes_app delete_tf_infra delete_tf_backend
+## Destroy all resources in AWS and EKS created by this codebase
+delete_all: 
+	make delete_kubernetes_app
+	make delete_infra
+	make delete_tf_backend
 
 ## Create bucket using AWS S3 for acting as Terraform backend
-create_tf_backend:
-	terraform -chdir=modules/terraform-backend-s3 init && terraform -chdir=modules/terraform-backend-s3 apply -auto-approve
+create_backend:
+	terraform -chdir=s3-backend init 
+	terraform -chdir=s3-backend apply -var-file="variables.tfvars" -auto-approve
 
 ## Create infra using terraform, incl. EKS, subnets, VPC etc.
-create_tf_infra: 
-	terraform init && terraform apply -var-file="network.tfvars"
+create_infra: 
+	terraform init
+	# terraform plan
+	terraform apply -auto-approve
+	# -var-file="network.tfvars"
 	terraform output eks_kubeconfig > /tmp/.kubeconfig
 	sed -n -e "2,$$(($$(wc -l < /tmp/.kubeconfig) - 1))p" /tmp/.kubeconfig > .kubeconfig
 
@@ -29,5 +39,5 @@ delete_tf_backend:
 	terraform -chdir=modules/terraform-backend-s3 destroy
 
 ## delete all infra set up using terraform, incl. EKS, subnets, VPC etc.
-delete_tf_infra: 
+delete_infra: 
 	terraform destroy
