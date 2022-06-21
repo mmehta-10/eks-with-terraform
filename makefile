@@ -28,7 +28,7 @@ create_infra:
 deploy_kubernetes_app:
 	KUBECONFIG=.kubeconfig kubectl apply -f kubernetes/
 	sleep 30
-	albdns=$$(KUBECONFIG=.kubeconfig kubectl get ing 2048-ingress -n 2048-game -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2> /dev/null) && echo $$albdns
+	nlbdns=$$(KUBECONFIG=.kubeconfig kubectl get ing max-weather-forecaster -n max-weather-forecaster -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2> /dev/null) && echo $$nlbdns
 
 ## Delete resources in kubernetes
 delete_kubernetes_app:
