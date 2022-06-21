@@ -220,6 +220,11 @@ resource "aws_iam_role_policy_attachment" "ALBIngressControllerIAMPolicyForNodes
   role       = aws_iam_role.eks_nodes.name
 }
 
+resource "aws_iam_role_policy_attachment" "CloudWatchAgentServerPolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  role       = aws_iam_role.eks_nodes.name
+}
+
 resource "aws_eks_node_group" "node" {
   cluster_name    = aws_eks_cluster.aws_eks.name
   node_group_name = "node_eks_with_terraform"
@@ -239,6 +244,7 @@ resource "aws_eks_node_group" "node" {
     aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
     aws_iam_role_policy_attachment.ALBIngressControllerIAMPolicyForNodes,
+    aws_iam_role_policy_attachment.CloudWatchAgentServerPolicy
   ]
 }
 
