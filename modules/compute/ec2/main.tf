@@ -2,10 +2,6 @@
 data "template_file" "userdata" {
   template = var.user_data_script #file("${path.module}/scripts/jenkins_server.sh")
 
-  # vars = {
-  #   env                    = "dev"
-  #   jenkins_admin_password = "mysupersecretpassword"
-  # }
 }
 
 # Place server in any one of the given subnets, selected

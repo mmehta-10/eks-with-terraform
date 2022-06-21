@@ -1,3 +1,9 @@
+# Set AWS_PROFILE
+variable "aws_profile" {
+  description = "AWS profile"
+  default     = "default"
+}
+
 # main creds for AWS connection
 variable "vpc_region" {
   description = "AWS region"
