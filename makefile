@@ -18,14 +18,19 @@ create_backend:
 ## Create infra using terraform, incl. EKS, subnets, VPC etc.
 create_infra: 
 	terraform init
-	# terraform plan
 	terraform apply -auto-approve
-	# -var-file="network.tfvars"
 	terraform output eks_kubeconfig > /tmp/.kubeconfig
 	sed -n -e "2,$$(($$(wc -l < /tmp/.kubeconfig) - 1))p" /tmp/.kubeconfig > .kubeconfig
 
 ## Create resources in kubernetes
 deploy_kubernetes_app:
+	# Deploy fluentd for cloudwatch logging of container logs
+	KUBECONFIG=.kubeconfig kubectl apply -f kubernetes/amazon-cloudwatch-fluentd
+	
+	# Deploy clusterautoscaler and metrics-server for enabling HPA
+	KUBECONFIG=.kubeconfig kubectl apply -f kubernetes/autoscaling
+
+	# Deploy nginx-ingress-controller and the max-weather-app
 	KUBECONFIG=.kubeconfig kubectl apply -f kubernetes/
 	sleep 30
 	nlbdns=$$(KUBECONFIG=.kubeconfig kubectl get ing max-weather-forecaster -n max-weather-forecaster -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2> /dev/null) && echo $$nlbdns
